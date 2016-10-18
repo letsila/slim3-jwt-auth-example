@@ -1,30 +1,118 @@
 <?php
-if (PHP_SAPI == 'cli-server') {
-    // To help the built-in PHP dev server, check if the request was actually for
-    // something which should probably be served as a static file
-    $url  = parse_url($_SERVER['REQUEST_URI']);
-    $file = __DIR__ . $url['path'];
-    if (is_file($file)) {
-        return false;
-    }
-}
+use \Psr\Http\Message\ServerRequestInterface as Request;
+use \Psr\Http\Message\ResponseInterface as Response;
+
+use \Firebase\JWT\JWT;
 
 require __DIR__ . '/../vendor/autoload.php';
-
-session_start();
 
 // Instantiate the app
 $settings = require __DIR__ . '/../src/settings.php';
 $app = new \Slim\App($settings);
 
-// Set up dependencies
-require __DIR__ . '/../src/dependencies.php';
+$container = $app->getContainer();
 
-// Register middleware
-require __DIR__ . '/../src/middleware.php';
+// Setting up the db
+$container['db'] = function ($c) {
+    $db = $c['settings']['db'];
+    $pdo = new PDO("mysql:host=127.0.0.1;dbname=tokens", "root", "");
+    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+    $pdo->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
 
-// Register routes
-require __DIR__ . '/../src/routes.php';
+    return $pdo;
+};
 
-// Run app
+
+$app->post('/connexion', function (Request $request, Response $response) {
+
+    header("Access-Control-Allow-Origin: *");
+    header("Access-Control-Allow-Headers: *");
+    header('Content-Type', 'application/json');
+    $data = $request->getParsedBody();
+
+    $result = file_get_contents('./users.json');
+    $users = json_decode($result, true);
+
+    $login = $data['user_login'];
+    $password = $data['user_password'];
+
+    foreach ($users as $key => $user) {
+        if ($user['user_login'] == $login && $user['user_pwd'] == $password) {
+            $current_user = $user;
+        }
+    }
+
+    if (!isset($current_user)) {
+        echo json_encode('No user found');
+        exit;
+    }
+
+    $key = "example_key";
+
+    $payload = array(
+        "iss"     => "http://your-domain.com",
+        "iat"     => time(),
+        "exp"     => time() + (3600 * 24 * 15),
+        "context" => [
+            "user" => [
+                "user_login" => $current_user['user_login'],
+                "user_id"    => $current_user['user_id']
+            ]
+        ]
+    );
+
+    try {
+        $jwt = JWT::encode($payload, $key);
+    } catch (Exception $e) {
+        echo json_encode($e);
+    }
+
+    // Find an existing token.
+    $sql = "SELECT * FROM tokens
+            WHERE user_id = :user_id AND date_expiration >" . time();
+
+    $token_from_db = false;
+    try {
+        $db = $this->db;
+        $stmt = $db->prepare($sql);
+        $stmt->bindParam("user_id", $current_user['user_id']);
+        $stmt->execute();
+        $token_from_db = $stmt->fetchObject();
+        $db = null;
+
+        if ($token_from_db) {
+            echo json_encode([
+                "token"      => $token_from_db->value,
+                "user_login" => $token_from_db->user_id
+            ]);
+        }
+    } catch (PDOException $e) {
+        echo '{"error":{"text":' . $e->getMessage() . '}}';
+    }
+
+    if (count($current_user) != 0 && !$token_from_db) {
+
+        $sql = "INSERT INTO tokens (user_id, value, date_created, date_expiration)
+                VALUES (:user_id, :value, :date_created, :date_expiration)";
+        try {
+            $db = $this->db;
+            $stmt = $db->prepare($sql);
+            $stmt->bindParam("user_id", $current_user['user_id']);
+            $stmt->bindParam("value", $jwt);
+            $stmt->bindParam("date_created", $payload['iat']);
+            $stmt->bindParam("date_expiration", $payload['exp']);
+            $stmt->execute();
+            $db = null;
+
+            echo json_encode([
+                "token"      => $jwt,
+                "user_login" => $current_user['user_id']
+            ]);
+        } catch (PDOException $e) {
+            echo '{"error":{"text":' . $e->getMessage() . '}}';
+        }
+    }
+});
+
+
 $app->run();
