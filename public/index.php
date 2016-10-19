@@ -22,7 +22,8 @@ $container['db'] = function ($c) {
     return $pdo;
 };
 
-$app->post('/connexion', function (Request $request, Response $response) {
+// Authenticate
+$app->post('/authenticate', function (Request $request, Response $response) {
     $data = $request->getParsedBody();
 
     $result = file_get_contents('./users.json');
@@ -109,6 +110,7 @@ $app->post('/connexion', function (Request $request, Response $response) {
     }
 });
 
+// A middleware for enabling CORS
 $app->add(function ($req, $res, $next) {
     $response = $next($req, $res);
     return $response
@@ -117,6 +119,7 @@ $app->add(function ($req, $res, $next) {
         ->withHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
 });
 
+// Get a secured data
 $app->get('/secured-data', function (Request $request, Response $response) {
 
     $jwt = $request->getHeaders();
