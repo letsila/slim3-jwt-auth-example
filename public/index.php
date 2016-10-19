@@ -22,12 +22,7 @@ $container['db'] = function ($c) {
     return $pdo;
 };
 
-
 $app->post('/connexion', function (Request $request, Response $response) {
-
-    header("Access-Control-Allow-Origin: *");
-    header("Access-Control-Allow-Headers: *");
-    header('Content-Type', 'application/json');
     $data = $request->getParsedBody();
 
     $result = file_get_contents('./users.json');
@@ -108,6 +103,49 @@ $app->post('/connexion', function (Request $request, Response $response) {
                 "token"      => $jwt,
                 "user_login" => $current_user['user_id']
             ]);
+        } catch (PDOException $e) {
+            echo '{"error":{"text":' . $e->getMessage() . '}}';
+        }
+    }
+});
+
+$app->add(function ($req, $res, $next) {
+    $response = $next($req, $res);
+    return $response
+        ->withHeader('Access-Control-Allow-Origin', '*')
+        ->withHeader('Access-Control-Allow-Headers', 'X-Requested-With, Content-Type, Accept, Origin, Authorization')
+        ->withHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+});
+
+$app->get('/secured-data', function (Request $request, Response $response) {
+
+    $jwt = $request->getHeaders();
+
+    $key = "example_key";
+
+    try {
+        $decoded = JWT::decode($jwt['HTTP_AUTHORIZATION'][0], $key, array('HS256'));
+    } catch (UnexpectedValueException $e) {
+        var_dump($e->getMessage());
+    }
+
+    if (isset($decoded)) {
+        $sql = "SELECT * FROM tokens WHERE user_id = :user_id";
+        $user_from_db = new StdClass();
+
+        try {
+            $db = $this->db;
+            $stmt = $db->prepare($sql);
+            $stmt->bindParam("user_id", $decoded->context->user->user_id);
+            $stmt->execute();
+            $user_from_db = $stmt->fetchObject();
+            $db = null;
+
+            if (isset($user_from_db->user_id)) {
+                echo json_encode([
+                    "response" => "This is your secure ressource !"
+                ]);
+            }
         } catch (PDOException $e) {
             echo '{"error":{"text":' . $e->getMessage() . '}}';
         }
