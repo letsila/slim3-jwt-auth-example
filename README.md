@@ -31,5 +31,7 @@ $app->get('/secured-data', function (Request $request, Response $response) {
 })
 ```
 
+## License
+[MIT] (https://opensource.org/licenses/mit-license.php) ©
 
 
