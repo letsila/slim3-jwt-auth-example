@@ -18,7 +18,7 @@ All the interesting stuff are placed inside the index.php under the public folde
 1. The authentication route which allows us to get the credentials and the token sent from the client for validation.
 ```php
 $app->post('/authenticate', function (Request $request, Response $response) {
-    ...
+    // ...
 })
 ```
 
@@ -27,11 +27,6 @@ that a token is set on the authorisation header of the request. The token will b
 the requested resource to the client.
 ```php
 $app->get('/secured-data', function (Request $request, Response $response) {
-    ...
+    // ...
 })
 ```
-
-## License
-[MIT] (https://opensource.org/licenses/mit-license.php) ©
-
-
