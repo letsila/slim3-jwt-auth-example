@@ -7,22 +7,22 @@ the [ionic2-jwt-sample] (https://github.com/letsila/ionic2-jwt-sample) a sample 
 The only dependency used is [firebase/php-jwt] (https://github.com/firebase/php-jwt) for creating and decoding the JSON
 web token.
 
-
 ## Storage
 For simplicity sake, users informations are stored in a JSON file named users.json located at the root of the project.
-An unique table named tokens have been used for storing the tokens.
+A database containing a single table named tokens allows us to store the informations related to each token. Database
+connexion is configured inside /src/dependencies.php.
 
 ## Routes
-All the interesting stuff are placed inside the index.php under the public folder where we have defined two routes in.
+Two routes were created :
 
-1. The authentication route which allows us to get the credentials and the token sent from the client for validation.
+1. An authentication route which allows us to get the credentials and the token sent from the client for validation.
 ```php
 $app->post('/authenticate', function (Request $request, Response $response) {
     // ...
 })
 ```
 
-2. A route which handle a get request for requiring secured ressource to test out our JWT implementation. This route expected
+2. A route which handle a get request for requiring restricted ressource to test out our JWT implementation. This route expected
 that a token is set on the authorisation header of the request. The token will be validated and if it succeed, we return
 the requested resource to the client.
 ```php
@@ -30,3 +30,7 @@ $app->get('/secured-data', function (Request $request, Response $response) {
     // ...
 })
 ```
+
+## Middleware
+We created a middleware under the /src/middleware.php file in order to handle CORS.
+
