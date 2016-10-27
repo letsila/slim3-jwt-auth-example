@@ -1,16 +1,29 @@
 # Slim3 jwt example
 
 This is an example of implementation of JWT authentication on the server side, using [Slim3] (http://www.slimframework.com/). This code can be used in pair with
-the [ionic2-jwt-sample] (https://github.com/letsila/ionic2-jwt-sample) a sample code on JWT via an Ionic2 app.
+the [ionic2 jwt sample] (https://github.com/letsila/ionic2-jwt-sample) a sample code on JWT via an Ionic2 app.
 
-## Dependencies
-The only dependency used is [firebase/php-jwt] (https://github.com/firebase/php-jwt) for creating and decoding the JSON
-web token.
+## Running locally
+* Clone or download the repository
+* You have to create a database named tokens which should contain a single table named tokens which contains the following columns:
+    - id: integer (unique)
+    - value: text (256)
+    - user_id: integer
+    - date_created: integer
+    - date_expiration: integer
+* Be sure that your database configuration match the specification under /src/settings.php
+* Check that all is ok by entering into the downloaded repository and launching phpunit using the following command
+```
+$ ./vendor/bin/phpunit
+```
+You should see `OK (4 tests, 8 assertions)
 
-## Storage
-For simplicity sake, users credentials are stored in a JSON file named users.json located at the root of the project.
-A database containing a single table named tokens allows us to store each token related information. Database
-connexion is configured inside /src/dependencies.php.
+* You can now launch the server by typing
+```
+php -S 0.0.0.0:8080 -t public public/index.php
+```
+
+* You are ready to sent requests to the server. Check /tests/Functional/RoutesTest.php to see what you can do.
 
 ## Routes
 Two routes were created :
@@ -31,6 +44,16 @@ $app->get('/restricted', function (Request $request, Response $response) {
 })
 ```
 
-## Middleware
-We created a middleware under the /src/middleware.php file in order to handle CORS.
+## Dependencies
+We used [firebase/php-jwt] (https://github.com/firebase/php-jwt) for creating and decoding the JSON web token.
 
+## Storage
+For simplicity sake, users credentials are stored in a JSON file named users.json located at the root of the project.
+A database containing a single table named tokens allows us to store each token related information. Database
+connexion is configured inside /src/dependencies.php.
+
+## Middleware
+We created a middleware under the /src/middleware.php file in order to enable CORS.
+
+## License
+MIT
