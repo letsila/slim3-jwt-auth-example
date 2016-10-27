@@ -27,18 +27,23 @@ class BaseTestCase extends \PHPUnit_Framework_TestCase
      *
      * @param string $requestMethod the request method (e.g. GET, POST, etc.)
      * @param string $requestUri the request URI
+     * @param array $headers
      * @param array|object|null $requestData the request data
      * @return \Slim\Http\Response
      */
-    public function runApp($requestMethod, $requestUri, $requestData = null)
+    public function runApp($requestMethod, $requestUri, $requestData = null, $headers=[])
     {
         // Create a mock environment for testing with
-        $environment = Environment::mock(
-            [
-                'REQUEST_METHOD' => $requestMethod,
-                'REQUEST_URI' => $requestUri
-            ]
-        );
+
+        $defaultEnv = [
+            'REQUEST_METHOD' => $requestMethod,
+            'REQUEST_URI' => $requestUri
+        ];
+
+        if (count($headers) > 0)
+            $defaultEnv += $headers;
+
+        $environment = Environment::mock($defaultEnv);
 
         // Set up a request object based on the environment
         $request = Request::createFromEnvironment($environment);

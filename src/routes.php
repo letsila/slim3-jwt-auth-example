@@ -23,74 +23,74 @@ $app->post('/authenticate', function (Request $request, Response $response) {
     }
 
     if (!isset($current_user)) {
-        echo json_encode('No user found');
-        exit;
-    }
+        return "No user found";
+    } else {
 
-    // Find a corresponding token.
-    $sql = "SELECT * FROM tokens
+        // Find a corresponding token.
+        $sql = "SELECT * FROM tokens
             WHERE user_id = :user_id AND date_expiration >" . time();
 
-    $token_from_db = false;
-    try {
-        $db = $this->db;
-        $stmt = $db->prepare($sql);
-        $stmt->bindParam("user_id", $current_user['user_id']);
-        $stmt->execute();
-        $token_from_db = $stmt->fetchObject();
-        $db = null;
-
-        if ($token_from_db) {
-            echo json_encode([
-                "token"      => $token_from_db->value,
-                "user_login" => $token_from_db->user_id
-            ]);
-        }
-    } catch (PDOException $e) {
-        echo '{"error":{"text":' . $e->getMessage() . '}}';
-    }
-
-    // Create a new token if a user is found but not a token corresponding to whom.
-    if (count($current_user) != 0 && !$token_from_db) {
-
-        $key = "your_secret_key";
-
-        $payload = array(
-            "iss"     => "http://your-domain.com",
-            "iat"     => time(),
-            "exp"     => time() + (3600 * 24 * 15),
-            "context" => [
-                "user" => [
-                    "user_login" => $current_user['user_login'],
-                    "user_id"    => $current_user['user_id']
-                ]
-            ]
-        );
-
-        try {
-            $jwt = JWT::encode($payload, $key);
-        } catch (Exception $e) {
-            echo json_encode($e);
-        }
-
-        $sql = "INSERT INTO tokens (user_id, value, date_created, date_expiration)
-                VALUES (:user_id, :value, :date_created, :date_expiration)";
+        $token_from_db = false;
         try {
             $db = $this->db;
             $stmt = $db->prepare($sql);
             $stmt->bindParam("user_id", $current_user['user_id']);
-            $stmt->bindParam("value", $jwt);
-            $stmt->bindParam("date_created", $payload['iat']);
-            $stmt->bindParam("date_expiration", $payload['exp']);
             $stmt->execute();
+            $token_from_db = $stmt->fetchObject();
             $db = null;
 
-            echo json_encode([
-                "token"      => $jwt,
-                "user_login" => $current_user['user_id']
-            ]);
+            if ($token_from_db) {
+                echo json_encode([
+                    "token"      => $token_from_db->value,
+                    "user_login" => $token_from_db->user_id
+                ]);
+            }
         } catch (PDOException $e) {
             echo '{"error":{"text":' . $e->getMessage() . '}}';
+        }
+
+        // Create a new token if a user is found but not a token corresponding to whom.
+        if (count($current_user) != 0 && !$token_from_db) {
+
+            $key = "your_secret_key";
+
+            $payload = array(
+                "iss"     => "http://your-domain.com",
+                "iat"     => time(),
+                "exp"     => time() + (3600 * 24 * 15),
+                "context" => [
+                    "user" => [
+                        "user_login" => $current_user['user_login'],
+                        "user_id"    => $current_user['user_id']
+                    ]
+                ]
+            );
+
+            try {
+                $jwt = JWT::encode($payload, $key);
+            } catch (Exception $e) {
+                echo json_encode($e);
+            }
+
+            $sql = "INSERT INTO tokens (user_id, value, date_created, date_expiration)
+                VALUES (:user_id, :value, :date_created, :date_expiration)";
+            try {
+                $db = $this->db;
+                $stmt = $db->prepare($sql);
+                $stmt->bindParam("user_id", $current_user['user_id']);
+                $stmt->bindParam("value", $jwt);
+                $stmt->bindParam("date_created", $payload['iat']);
+                $stmt->bindParam("date_expiration", $payload['exp']);
+                $stmt->execute();
+                $db = null;
+
+                echo json_encode([
+                    "token"      => $jwt,
+                    "user_login" => $current_user['user_id']
+                ]);
+            } catch (PDOException $e) {
+                echo '{"error":{"text":' . $e->getMessage() . '}}';
+            }
         }
     }
 });
@@ -121,7 +121,7 @@ $app->get('/restricted', function (Request $request, Response $response) {
 
             if (isset($user_from_db->user_id)) {
                 echo json_encode([
-                    "response" => "This is your secure ressource !"
+                    "response" => "This is your secure resource !"
                 ]);
             }
         } catch (PDOException $e) {
