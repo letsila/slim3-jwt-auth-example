@@ -1,12 +1,12 @@
 [
   {
     "user_id": "1",
-    "user_login": "briazam",
-    "user_pwd": "briazam"
+    "user_login": "neo",
+    "user_pwd": "neo"
   },
   {
     "user_id": "2",
-    "user_login": "cybelar",
-    "user_pwd": "cybelar"
+    "user_login": "keanu",
+    "user_pwd": "keanu"
   }
 ]

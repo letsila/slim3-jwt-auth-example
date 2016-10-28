@@ -7,7 +7,7 @@ the [ionic2 jwt sample] (https://github.com/letsila/ionic2-jwt-sample) a sample 
 * Clone or download the repository
 * You have to create a database named tokens which should contain a single table named tokens which contains the following columns:
     - id: integer (unique)
-    - value: text (256)
+    - value: text
     - user_id: integer
     - date_created: integer
     - date_expiration: integer
@@ -16,7 +16,7 @@ the [ionic2 jwt sample] (https://github.com/letsila/ionic2-jwt-sample) a sample 
 ```
 $ ./vendor/bin/phpunit
 ```
-You should see `OK (4 tests, 8 assertions)
+You should see OK (4 tests, 8 assertions)
 
 * You can now launch the server by typing
 ```
@@ -26,16 +26,16 @@ php -S 0.0.0.0:8080 -t public public/index.php
 * You are ready to sent requests to the server. Check /tests/Functional/RoutesTest.php to see what you can do.
 
 ## Routes
-Two routes were created :
+Two routes were created:
 
-1. An authentication route which allows us to get the credentials and the token sent from the client for validation.
+* An authentication route which allows us to get the credentials and the token sent from the client for validation.
 ```php
 $app->post('/authenticate', function (Request $request, Response $response) {
     // ...
 })
 ```
 
-2. A route which handle a get request for requiring restricted resource to test out our JWT implementation. This route expected
+* A route which handle a get request for requiring restricted resource to test out our JWT implementation. This route expected
 that a token is set on the authorisation header of the request. The token will be validated and if it succeed, we return
 the requested resource to the client.
 ```php
