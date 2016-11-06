@@ -23,7 +23,7 @@ You should see OK (4 tests, 8 assertions)
 php -S 0.0.0.0:8080 -t public public/index.php
 ```
 
-* You are ready to sent requests to the server. Check /tests/Functional/RoutesTest.php to see what you can do.
+* You are ready to send requests to the server. Check /tests/Functional/RoutesTest.php to see what you can do.
 
 ## Routes
 Two routes were created:

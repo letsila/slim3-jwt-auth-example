@@ -2,16 +2,23 @@
 
 namespace Tests\Functional;
 
+use PDO;
+
 class RoutesTest extends BaseTestCase
 {
-    public function testGetRestrictedResource()
-    {
-        // This token should be present within the database.
-        $token = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJodHRwOlwvXC95b3VyLWRvbWFpbi5jb20iLCJpYXQiOjE0NzY3ODc1NTgsImV4cCI6MTQ3ODA4MzU1OCwiY29udGV4dCI6eyJ1c2VyIjp7InVzZXJfbG9naW4iOiJicmlhemFtIiwidXNlcl9pZCI6IjE2NyJ9fX0.wE8D79lgvtwTFC2i5zfCfRpb2xeoO66IPvQer3k9Adc";
-        $response = $this->runApp('GET', '/restricted', [], ["HTTP_AUTHORIZATION" => $token]);
 
-        $this->assertEquals(200, $response->getStatusCode());
-        $this->assertContains('This is your secure resource !', (string)$response->getBody());
+    public function __construct()
+    {
+        $this->db = [
+            'host' => '127.0.0.1',
+            'name' => 'tokens',
+            'user' => 'root',
+            'password' => ''
+        ];
+
+        $this->pdo = new PDO("mysql:host=" . $this->db['host'] . ";dbname=" . $this->db['name'], $this->db['user'], $this->db['password']);
+        $this->pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+        $this->pdo->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
     }
 
     public function testAuthenticateUser()
@@ -39,4 +46,29 @@ class RoutesTest extends BaseTestCase
         $this->assertEquals(200, $response->getStatusCode());
         $this->assertContains('No user found', (string)$response->getBody());
     }
+
+
+    public function testGetRestrictedResource()
+    {
+        // Grab a token from database.
+        $sql = "SELECT * FROM tokens";
+
+        $token_from_db = false;
+        try {
+            $stmt = $this->pdo->prepare($sql);
+            $stmt->execute();
+            $token_from_db = $stmt->fetchObject()->value;
+            $db = null;
+
+        } catch (PDOException $e) {
+            echo '{"error":{"text":' . $e->getMessage() . '}}';
+        }
+
+        // This token should be present within the database.
+        $response = $this->runApp('GET', '/restricted', [], ["HTTP_AUTHORIZATION" => $token_from_db]);
+
+        $this->assertEquals(200, $response->getStatusCode());
+        $this->assertContains('This is your secure resource !', (string)$response->getBody());
+    }
+
 }

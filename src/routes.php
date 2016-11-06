@@ -23,7 +23,7 @@ $app->post('/authenticate', function (Request $request, Response $response) {
     }
 
     if (!isset($current_user)) {
-        return "No user found";
+        echo json_encode("No user found");
     } else {
 
         // Find a corresponding token.
@@ -100,7 +100,7 @@ $app->get('/restricted', function (Request $request, Response $response) {
 
     $jwt = $request->getHeaders();
 
-    $key = "example_key";
+    $key = "your_secret_key";
 
     try {
         $decoded = JWT::decode($jwt['HTTP_AUTHORIZATION'][0], $key, array('HS256'));
