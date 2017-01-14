@@ -1,16 +1,22 @@
-# Slim3 jwt example
+# Slim3 JWT authentication example
 
 This is an example of implementation of JWT authentication on the server side, using [Slim3] (http://www.slimframework.com/). This code can be used in pair with
 the [ionic2 jwt sample] (https://github.com/letsila/ionic2-jwt-sample) a sample code on JWT via an Ionic2 app.
 
 ## Running locally
 * Clone or download the repository
-* You have to create a database named tokens which should contain a single table named tokens which contains the following columns:
-    - id: integer (unique)
-    - value: text
-    - user_id: integer
-    - date_created: integer
-    - date_expiration: integer
+* You have to create a database named tokens which should contain a single table named tokens with the following structure:
+```
+    CREATE TABLE `tokens` (
+      `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
+      `value` text,
+      `user_id` int(11) DEFAULT NULL,
+      `date_created` int(11) DEFAULT NULL,
+      `date_expiration` int(11) DEFAULT NULL,
+      PRIMARY KEY (`id`)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+```
+
 * Be sure that your database configuration match the specification under /src/settings.php
 * Check that all is ok by entering into the downloaded repository and launching phpunit using the following command
 ```
