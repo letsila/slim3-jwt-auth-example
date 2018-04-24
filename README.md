@@ -22,8 +22,10 @@ the [ionic2 jwt sample](https://github.com/letsila/ionic2-jwt-sample) a sample c
 ```
 $ ./vendor/bin/phpunit
 ```
-You should see OK (4 tests, 8 assertions)
-
+* You should see 
+```
+OK (4 tests, 8 assertions)
+```
 * You can now launch the server by typing
 ```
 php -S 0.0.0.0:8080 -t public public/index.php
