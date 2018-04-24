@@ -1,7 +1,7 @@
 # Slim3 JWT authentication example
 
-This is an example of implementation of JWT authentication on the server side, using (Slim3)[http://www.slimframework.com/]. This code can be used in pair with
-the (ionic2 jwt sample)[https://github.com/letsila/ionic2-jwt-sample] a sample code on JWT via an Ionic2 app.
+This is an example of implementation of JWT authentication on the server side, using [Slim3](http://www.slimframework.com/). This code can be used in pair with
+the [ionic2 jwt sample](https://github.com/letsila/ionic2-jwt-sample) a sample code on JWT via an Ionic2 app.
 
 ## Running locally
 * Clone or download the repository
